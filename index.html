@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="es" data-variant="pastoral">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>La Llegada del Mesías · Etapa 9</title>
+<meta name="description" content="Un recorrido en 3D por la Encarnación, la promesa cumplida y el Misterio Pascual: Cristo Jesús, de Belén a la Ascensión (0–33 d.C.).">
+<meta name="theme-color" content="#0B0E14">
+<meta property="og:type" content="website">
+<meta property="og:title" content="La Llegada del Mesías · Etapa 9">
+<meta property="og:description" content="Toda la historia esperaba una luz. Un recorrido por la Encarnación, la promesa cumplida y la Pascua.">
+<meta property="og:image" content="img/og.jpg">
+<meta property="og:locale" content="es_ES">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500&display=swap">
+<link rel="stylesheet" href="css/style.css">
+<script type="importmap">{"imports":{"three":"./js/vendor/three.module.min.js"}}</script>
+</head>
+<body class="is-gated">
+<a class="skip" href="#contenido">Saltar al contenido</a>
+
+<canvas id="luz" aria-hidden="true"></canvas>
+<div class="fallback-glow" aria-hidden="true"></div>
+<div class="grain" aria-hidden="true"></div>
+
+<!-- Umbral de entrada -->
+<div class="gate" id="gate" role="dialog" aria-modal="true" aria-labelledby="gate-title">
+  <div class="gate__inner">
+    <p class="eyebrow">Etapa 9 · 0 – 33 d.C.</p>
+    <p class="gate__title" id="gate-title">Toda la historia<br><em>esperaba una luz.</em></p>
+    <div class="gate__actions">
+      <button class="btn btn--gold" data-enter="sound">Entrar con sonido</button>
+      <button class="btn" data-enter="silent">Entrar en silencio</button>
+    </div>
+    <p class="gate__note">Puedes apagar el sonido en cualquier momento.</p>
+  </div>
+</div>
+
+<header class="hud">
+  <a class="hud__brand" href="#inicio" aria-label="La Llegada del Mesías, inicio">
+    <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 2v20M5 8h14" stroke="currentColor" stroke-width="1.4" fill="none"/></svg>
+    <span>La Llegada del Mesías</span>
+  </a>
+  <nav class="hud__nav" aria-label="Capítulos">
+    <a href="#encarnacion"><span>01</span> Encarnación</a>
+    <a href="#promesa"><span>02</span> Promesa</a>
+    <a href="#pascua"><span>03</span> Pascua</a>
+    <a href="#corazon"><span>04</span> Corazón</a>
+  </nav>
+  <div class="hud__tools">
+    <span class="hud__progress" aria-hidden="true"><b id="pct">0</b>%</span>
+    <button class="chip" id="btn-sound" aria-pressed="false">Sonido · <span>no</span></button>
+    <button class="chip" id="btn-motion" aria-pressed="false">Reducir movimiento</button>
+  </div>
+</header>
+
+<div class="rail" aria-hidden="true"><i id="rail-fill"></i></div>
+
+<main id="contenido">
+
+  <!-- 00 · INICIO -->
+  <section class="scene scene--hero" id="inicio" data-tone="0">
+    <p class="eyebrow reveal">En la plenitud de los tiempos</p>
+    <h1 class="hero__title">
+      <span class="line"><span>La Llegada</span></span>
+      <span class="line"><span><em>del Mesías</em></span></span>
+    </h1>
+    <p class="hero__sub reveal">Cristo Jesús · de Belén a la Ascensión · 0 – 33 d.C.</p>
+    <p class="hero__lead reveal">Cómo Dios se hizo hombre para salvarnos: un recorrido para contemplar el corazón de nuestra fe.</p>
+    <p class="scroll-cue" aria-hidden="true"><span></span>Desliza para avanzar</p>
+  </section>
+
+  <!-- 01 · ENCARNACIÓN -->
+  <section class="chapter" id="encarnacion" data-tone="1" aria-labelledby="t-encarnacion">
+    <header class="chapter__head">
+      <p class="chapter__num">01 <span>/ Encarnación</span></p>
+      <h2 id="t-encarnacion" class="h2"><span class="line"><span>El nacimiento</span></span><span class="line"><span><em>de la esperanza</em></span></span></h2>
+      <p class="chapter__lead reveal">Dios entra en la historia humana tras el consentimiento de María. Ya no es un misterio lejano: tiene rostro, familia y casa.</p>
+    </header>
+
+    <article class="station station--left">
+      <figure class="medal reveal"><img src="img/fiat.webp" alt="La Virgen María, con la paloma del Espíritu Santo, responde al anuncio" width="640" height="640" loading="lazy"></figure>
+      <div class="station__text reveal">
+        <p class="kicker">I</p>
+        <h3 class="h3">El «Fiat» de María</h3>
+        <p>La respuesta libre y amorosa de la Virgen ante el llamado de Dios permite que el Salvador del mundo tome nuestra carne.</p>
+        <p class="lesson">Nos enseña el valor de decir «sí» a los planes de Dios con confianza.</p>
+        <p class="cita"><span class="sc">Lc 1, 38</span> «Hágase en mí según tu palabra».</p>
+      </div>
+    </article>
+
+    <article class="station station--right">
+      <figure class="medal medal--arch reveal"><img src="img/familia.webp" alt="La Sagrada Familia: María sostiene al Niño junto a san José" width="640" height="695" loading="lazy"></figure>
+      <div class="station__text reveal">
+        <p class="kicker">II</p>
+        <h3 class="h3">El núcleo familiar sagrado</h3>
+        <p>Jesús, María y José forman el hogar donde Dios quiso hacerse presente en la tierra.</p>
+        <p class="lesson">Nos recuerdan la santidad y el refugio que debe ser la familia.</p>
+      </div>
+    </article>
+
+    <article class="station station--left">
+      <figure class="medal reveal"><img src="img/emmanuel.webp" alt="Jesucristo con los brazos abiertos" width="640" height="640" loading="lazy"></figure>
+      <div class="station__text reveal">
+        <p class="kicker">III</p>
+        <h3 class="h3">El Dios con nosotros</h3>
+        <p>Jesucristo encarna la cercanía divina: presencia de Dios y presencia humana en la Tierra.</p>
+        <p class="lesson">Dios ya no es un misterio lejano, sino alguien que camina a nuestro lado.</p>
+        <p class="cita"><span class="sc">Mt 1, 23</span> «Le pondrán por nombre Emmanuel».</p>
+      </div>
+    </article>
+  </section>
+
+  <!-- 02 · PROMESA (momento firma: el hilo de luz une profecía y cumplimiento) -->
+  <section class="chapter chapter--promise" id="promesa" data-tone="2" aria-labelledby="t-promesa">
+    <header class="chapter__head">
+      <p class="chapter__num">02 <span>/ Promesa</span></p>
+      <h2 id="t-promesa" class="h2"><span class="line"><span>Dios cumple</span></span><span class="line"><span><em>su palabra</em></span></span></h2>
+      <p class="chapter__lead reveal">Un puente entre el Antiguo y el Nuevo Testamento. Lo anunciado durante siglos se hace realidad viva en Jesús.</p>
+    </header>
+
+    <div class="deck" id="deck" aria-roledescription="carrusel" aria-label="Profecía y cumplimiento">
+      <div class="deck__track" id="deck-track"></div>
+      <div class="deck__ui">
+        <button class="round" id="deck-prev" aria-label="Página anterior">←</button>
+        <p class="deck__count" aria-live="polite"><b id="deck-i">01</b> / <span id="deck-n">06</span></p>
+        <button class="round" id="deck-next" aria-label="Página siguiente">→</button>
+      </div>
+      <p class="deck__hint">Arrastra a la izquierda para pasar la página · a la derecha para volver</p>
+    </div>
+  </section>
+
+  <!-- 03 · PASCUA -->
+  <section class="chapter chapter--pascua" id="pascua" data-tone="3" aria-labelledby="t-pascua">
+    <header class="chapter__head">
+      <p class="chapter__num">03 <span>/ Pascua</span></p>
+      <h2 id="t-pascua" class="h2"><span class="line"><span>El triunfo</span></span><span class="line"><span><em>del amor</em></span></span></h2>
+      <p class="chapter__lead reveal">El Misterio Pascual y la redención definitiva: la misión de Jesús culmina en la cruz, la tumba vacía y la gloria.</p>
+    </header>
+
+    <ol class="pascua">
+      <li class="pascua__item reveal">
+        <img src="img/cruz.webp" alt="Cristo crucificado ante un cielo encendido" width="640" height="640" loading="lazy">
+        <p class="kicker">I</p>
+        <h3 class="h3">Sacrificio en la cruz</h3>
+        <p>Entrega voluntaria de Cristo para perdonar nuestras faltas. Su entrega nos abre las puertas del cielo.</p>
+      </li>
+      <li class="pascua__item reveal">
+        <img src="img/resurreccion.webp" alt="Cristo resucitado sale del sepulcro" width="640" height="640" loading="lazy">
+        <p class="kicker">II</p>
+        <h3 class="h3">Resurrección gloriosa</h3>
+        <p>Victoria sobre la muerte y el pecado al tercer día.</p>
+      </li>
+      <li class="pascua__item reveal">
+        <img src="img/alianza.webp" alt="Cáliz y hostia junto a un pergamino de la Alianza" width="640" height="648" loading="lazy">
+        <p class="kicker">III</p>
+        <h3 class="h3">Nueva y Eterna Alianza</h3>
+        <p>Pacto perpetuo sellado con su sangre, vivo en la Eucaristía que nos alimenta cada día.</p>
+      </li>
+      <li class="pascua__item reveal">
+        <img src="img/ascension.webp" alt="Cristo asciende entre las nubes" width="640" height="640" loading="lazy">
+        <p class="kicker">IV</p>
+        <h3 class="h3">Ascensión a los cielos</h3>
+        <p>El Señor asciende y consolida su reinado eterno, con la certeza de que nos ha preparado un lugar.</p>
+      </li>
+    </ol>
+  </section>
+
+  <!-- 04 · CORAZÓN -->
+  <section class="chapter chapter--heart" id="corazon" data-tone="4" aria-labelledby="t-corazon">
+    <p class="chapter__num">04 <span>/ Corazón</span></p>
+    <h2 id="t-corazon" class="visually-hidden">Una reflexión para el corazón</h2>
+    <p class="heart__text reveal">Tu vida está sostenida por un plan de amor inmenso. Desde la humildad del pesebre hasta la gloria de la cruz y la resurrección, Jesús recorrió todo ese camino <em>por ti</em>.</p>
+    <blockquote class="heart__q reveal">
+      <p>¿Cómo puedes hoy, a ejemplo de María, abrirle las puertas de tu corazón para que Él sea el centro de tu hogar y de tu caminar diario?</p>
+    </blockquote>
+    <div class="pause reveal" aria-hidden="true"><span></span>Una pausa en silencio<span></span></div>
+  </section>
+
+  <!-- Lámina -->
+  <section class="lamina" aria-labelledby="t-lamina">
+    <h2 id="t-lamina" class="lamina__title">La lámina completa</h2>
+    <a class="lamina__img reveal" href="img/infografia.webp" target="_blank" rel="noopener">
+      <img src="img/infografia.webp" alt="Infografía «Etapa 9: La Llegada del Mesías — Cristo Jesús (0–33 d.C.)»" width="1600" height="893" loading="lazy">
+    </a>
+  </section>
+</main>
+
+<footer class="foot">
+  <p class="foot__big">Emmanuel.<br><em>Dios con nosotros.</em></p>
+  <div class="foot__cols">
+    <p>Parroquia de Santa Casilda<br>Calle Parador del Sol, 10 · 28019 Madrid</p>
+    <p>Arciprestazgo San Miguel<br>Carabanchel</p>
+    <p><a href="#inicio">Volver al principio ↑</a></p>
+  </div>
+</footer>
+
+<script src="js/main.js" defer></script>
+<script type="module" src="js/scene.js"></script>
+</body>
+</html>
