@@ -61,7 +61,7 @@ function init() {
       // el horizonte se tiñe de la luz hacia la meta
       vec3 toG = normalize(uGoal - uCam); vec3 toP = normalize(wp - uCam);
       float g = pow(max(dot(toG,toP),0.), 18.);
-      vec3 fogC = mix(uFog, uLight*.55, g*.6);
+      vec3 fogC = mix(uFog + vec3(.03,.035,.045), uLight*.55, g*.6);
       return mix(col, fogC, clamp(f,0.,1.));
     }`;
 
@@ -89,98 +89,130 @@ function init() {
         vec3 ld = normalize(uGoal - vW);
         float rim = pow(max(dot(n, ld), 0.), 2.);
         float moon = max(dot(n, normalize(vec3(-.4,.8,.3))),0.);
-        vec3 base = vec3(.032,.04,.058) + vec3(.025,.032,.05)*moon;
-        vec3 col = base + uLight*rim*.16;
+        vec3 base = vec3(.022,.027,.04) + vec3(.02,.025,.04)*moon;
+        vec3 col = base + uLight*rim*.10;
         gl_FragColor = vec4(applyFog(col, vW), 1.);
       }`
   }));
   scene.add(terrain);
 
-  /* ---------- Sendero de piedra ---------- */
-  const N = lowPower ? 500 : 800, W = 1.0;
-  const rp = new Float32Array((N + 1) * 2 * 3), ruv = new Float32Array((N + 1) * 2 * 2), idx = [];
-  const P = new THREE.Vector3(), T = new THREE.Vector3(), SIDE = new THREE.Vector3(), UP = new THREE.Vector3(0, 1, 0);
-  for (let i = 0; i <= N; i++) {
-    const t = i / N; curve.getPointAt(t, P); curve.getTangentAt(t, T);
-    SIDE.crossVectors(T, UP).normalize();
-    for (let s = 0; s < 2; s++) {
-      const k = (i * 2 + s), sg = s ? 1 : -1;
-      rp[k * 3] = P.x + SIDE.x * W * sg; rp[k * 3 + 1] = P.y + .02; rp[k * 3 + 2] = P.z + SIDE.z * W * sg;
-      ruv[k * 2] = s; ruv[k * 2 + 1] = t;
+  /* ---------- El camino: un hilo de luz dorada que serpentea hacia Él ---------- */
+  const ribbon = (N, W, lift) => {
+    const rp = new Float32Array((N + 1) * 2 * 3), ruv = new Float32Array((N + 1) * 2 * 2), idx = [];
+    const P = new THREE.Vector3(), T = new THREE.Vector3(), SIDE = new THREE.Vector3(), UP = new THREE.Vector3(0, 1, 0);
+    for (let i = 0; i <= N; i++) {
+      const t = i / N; curve.getPointAt(t, P); curve.getTangentAt(t, T);
+      SIDE.crossVectors(T, UP).normalize();
+      for (let s = 0; s < 2; s++) {
+        const k = i * 2 + s, sg = s ? 1 : -1;
+        rp[k * 3] = P.x + SIDE.x * W * sg; rp[k * 3 + 1] = P.y + lift; rp[k * 3 + 2] = P.z + SIDE.z * W * sg;
+        ruv[k * 2] = s; ruv[k * 2 + 1] = t;
+      }
+      if (i < N) { const a = i * 2; idx.push(a, a + 1, a + 2, a + 1, a + 3, a + 2); }
     }
-    if (i < N) { const a = i * 2; idx.push(a, a + 1, a + 2, a + 1, a + 3, a + 2); }
-  }
-  const rg = new THREE.BufferGeometry();
-  rg.setAttribute('position', new THREE.BufferAttribute(rp, 3));
-  rg.setAttribute('uv', new THREE.BufferAttribute(ruv, 2));
-  rg.setIndex(idx);
-  const road = new THREE.Mesh(rg, new THREE.ShaderMaterial({
-    uniforms: U, transparent: true, depthWrite: false,
-    vertexShader: `varying vec2 vUv; varying vec3 vW;
-      void main(){ vUv=uv; vec4 w=modelMatrix*vec4(position,1.); vW=w.xyz; gl_Position=projectionMatrix*viewMatrix*w; }`,
-    fragmentShader: `uniform vec3 uLight; uniform vec3 uGoal; uniform vec3 uFog; uniform vec3 uCam; uniform float uHead; uniform float uTime;
+    const g = new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.BufferAttribute(rp, 3));
+    g.setAttribute('uv', new THREE.BufferAttribute(ruv, 2));
+    g.setIndex(idx); return g;
+  };
+  const pathFrag = (glow) => `uniform vec3 uLight; uniform vec3 uCam; uniform float uHead; uniform float uTime;
       varying vec2 vUv; varying vec3 vW;
-      ${fogChunk}
-      float h(vec2 p){ return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453); }
       void main(){
-        // tierra apisonada con piedras irregulares (voronoi)
-        vec2 g = vec2(vUv.x*5., vUv.y*${L}.*2.4);
-        vec2 ig = floor(g), fg = fract(g); float md = 8., md2 = 8.; vec2 mid = vec2(0.);
-        for(int j=-1;j<=1;j++) for(int i=-1;i<=1;i++){
-          vec2 o = vec2(float(i),float(j)); vec2 r = o + vec2(h(ig+o), h(ig+o+7.3)) - fg; float d = dot(r,r);
-          if(d<md){ md2=md; md=d; mid=ig+o; } else if(d<md2){ md2=d; }
-        }
-        float edge = smoothstep(.0,.18, sqrt(md2)-sqrt(md));
-        float tone = .7 + h(mid)*.45;
-        vec3 earth = vec3(.17,.14,.105);
-        vec3 stone = mix(earth, vec3(.36,.32,.26)*tone, edge*.85);
-        // luz: lo andado queda dorado; delante se enciende un tramo que guía
-        float walked = 1. - smoothstep(uHead-.002, uHead+.015, vUv.y);
-        float guide = smoothstep(uHead-.01, uHead+.02, vUv.y)*(1.-smoothstep(uHead+.03, uHead+.16, vUv.y));
-        float center = 1. - abs(vUv.x-.5)*2.;
-        float near = smoothstep(2., 14., distance(vW, uCam));
-        vec3 col = stone*(.22 + walked*.18 + guide*.55) * (.55 + near*.45);
-        col += uLight * (walked*.08 + guide*.22) * center;
-        // brillo que fluye hacia la meta
-        float flow = smoothstep(.0,.04, fract(vUv.y*14. - uTime*.06)) * (1.-smoothstep(.04,.18, fract(vUv.y*14. - uTime*.06)));
-        col += uLight * flow * center * .12 * (1.-walked);
-        float side = smoothstep(0.,.18,vUv.x)*smoothstep(1.,.82,vUv.x);
-        gl_FragColor = vec4(applyFog(col, vW), side);
-      }`
-  }));
-  road.renderOrder = 1;
-  scene.add(road);
+        float x = (vUv.x - .5) * 2.;
+        float prof = ${glow ? 'exp(-x*x*3.)*.22' : 'exp(-x*x*22.)*1.3 + exp(-x*x*4.)*.35'};
+        // pulsos de luz que suben hacia la meta
+        float f = fract(vUv.y*9. - uTime*.045);
+        float pulse = smoothstep(0.,.03,f)*(1.-smoothstep(.03,.22,f));
+        float ahead = smoothstep(uHead-.01, uHead+.02, vUv.y);
+        float d = distance(vW, uCam);
+        float fade = smoothstep(1.2, 6., d) * (1. - smoothstep(200., 420., d)*.6);
+        float k = prof * (.75 + pulse*.9*ahead) * fade * (.55 + .45*ahead);
+        vec3 col = mix(uLight, vec3(1.,.97,.9), clamp(prof-.6,0.,1.));
+        gl_FragColor = vec4(col*k, k);
+      }`;
+  const pathVert = `varying vec2 vUv; varying vec3 vW;
+      void main(){ vUv=uv; vec4 w=modelMatrix*vec4(position,1.); vW=w.xyz; gl_Position=projectionMatrix*viewMatrix*w; }`;
+  const NR = lowPower ? 600 : 900;
+  [[1.6, .05, true], [.16, .07, false]].forEach(([w, lift, glow]) => {
+    const m = new THREE.Mesh(ribbon(NR, w, lift), new THREE.ShaderMaterial({
+      uniforms: U, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
+      vertexShader: pathVert, fragmentShader: pathFrag(glow)
+    }));
+    m.renderOrder = 3; scene.add(m);
+  });
 
-  /* ---------- Lámparas a los lados (se encienden a tu paso) ---------- */
-  const LN = lowPower ? 70 : 110;
-  const lp = new Float32Array(LN * 2 * 3), lt = new Float32Array(LN * 2);
-  for (let i = 0; i < LN; i++) {
-    const t = (i + .5) / LN; curve.getPointAt(t, P); curve.getTangentAt(t, T); SIDE.crossVectors(T, UP).normalize();
-    for (let s = 0; s < 2; s++) {
-      const k = i * 2 + s, sg = s ? 1 : -1;
-      lp[k * 3] = P.x + SIDE.x * (W + .35) * sg; lp[k * 3 + 1] = P.y + .45; lp[k * 3 + 2] = P.z + SIDE.z * (W + .35) * sg;
-      lt[k] = t;
-    }
+  /* ---------- Chispas que flotan sobre el camino ---------- */
+  const SP = lowPower ? 500 : 900;
+  const spp = new Float32Array(SP * 3), spt = new Float32Array(SP), sps = new Float32Array(SP);
+  const P = new THREE.Vector3();
+  for (let i = 0; i < SP; i++) {
+    const t = Math.random(); curve.getPointAt(t, P);
+    spp[i * 3] = P.x + (Math.random() - .5) * 3; spp[i * 3 + 1] = P.y + .2 + Math.random() * 2.2; spp[i * 3 + 2] = P.z + (Math.random() - .5) * 3;
+    spt[i] = t; sps[i] = Math.random();
   }
-  const lg = new THREE.BufferGeometry();
-  lg.setAttribute('position', new THREE.BufferAttribute(lp, 3));
-  lg.setAttribute('aT', new THREE.BufferAttribute(lt, 1));
+  const spg = new THREE.BufferGeometry();
+  spg.setAttribute('position', new THREE.BufferAttribute(spp, 3));
+  spg.setAttribute('aT', new THREE.BufferAttribute(spt, 1));
+  spg.setAttribute('aS', new THREE.BufferAttribute(sps, 1));
   const pr = renderer.getPixelRatio();
-  scene.add(new THREE.Points(lg, new THREE.ShaderMaterial({
-    uniforms: { ...U, uPx: { value: 70 * pr } }, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
-    vertexShader: `attribute float aT; uniform float uHead; uniform float uTime; uniform float uPx; varying float vA;
+  scene.add(new THREE.Points(spg, new THREE.ShaderMaterial({
+    uniforms: { ...U, uPx: { value: 26 * pr } }, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
+    vertexShader: `attribute float aT; attribute float aS; uniform float uTime; uniform float uPx; uniform float uHead; varying float vA;
       void main(){
-        vec4 mv = modelViewMatrix*vec4(position,1.);
-        float lit = 1. - smoothstep(uHead+.01, uHead+.07, aT);
-        float flick = .85 + .15*sin(uTime*3. + aT*400.);
-        vA = (.10 + lit*.9) * flick * (1. - smoothstep(60., 220., -mv.z)) * smoothstep(2.5, 7., -mv.z);
-        gl_PointSize = uPx * (.3 + lit*.5) / -mv.z;
+        vec3 p = position; p.y += sin(uTime*.5 + aS*40.)*.15; p.x += cos(uTime*.3 + aS*20.)*.12;
+        vec4 mv = modelViewMatrix*vec4(p,1.);
+        float near = smoothstep(1.5, 5., -mv.z) * (1. - smoothstep(40., 140., -mv.z));
+        vA = near * (.35 + .65*aS) * (.6 + .4*sin(uTime*2. + aS*90.));
+        gl_PointSize = uPx * (.5 + aS) / -mv.z;
         gl_Position = projectionMatrix*mv;
       }`,
     fragmentShader: `uniform vec3 uLight; varying float vA;
-      void main(){ float d = length(gl_PointCoord-.5); float a = smoothstep(.5,0.,d); a*=a;
-        gl_FragColor = vec4(uLight*(1.+a), a*vA); }`
+      void main(){ float d = length(gl_PointCoord-.5); float a = smoothstep(.5,0.,d); gl_FragColor = vec4(uLight*a*vA, a*vA); }`
   })));
+
+  /* ---------- Nubes y bruma (como en georgedo: velos entre los que pasa la luz) ---------- */
+  const cloudMat = new THREE.ShaderMaterial({
+    uniforms: U, transparent: true, depthWrite: false,
+    vertexShader: `attribute float aSeed; varying vec2 vUv; varying vec3 vW; varying float vSeed;
+      void main(){ vUv=uv; vSeed=aSeed; vec4 w=modelMatrix*vec4(position,1.); vW=w.xyz; gl_Position=projectionMatrix*viewMatrix*w; }`,
+    fragmentShader: `uniform vec3 uLight; uniform vec3 uGoal; uniform vec3 uCam; uniform float uTime; uniform float uHead;
+      varying vec2 vUv; varying vec3 vW; varying float vSeed;
+      float h(vec2 p){ return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453); }
+      float n(vec2 p){ vec2 i=floor(p), f=fract(p); f=f*f*(3.-2.*f);
+        return mix(mix(h(i),h(i+vec2(1,0)),f.x), mix(h(i+vec2(0,1)),h(i+vec2(1,1)),f.x), f.y); }
+      float fbm(vec2 p){ float v=0., a=.55; for(int i=0;i<4;i++){ v+=a*n(p); p*=2.03; a*=.5; } return v; }
+      void main(){
+        vec2 p = vUv*2.6 + vSeed*13.;
+        p += vec2(uTime*.012, -uTime*.006);
+        float c = fbm(p + fbm(p*1.4)*.8);
+        vec2 q = vUv - .5; float r = length(q*vec2(1.,1.6));
+        float shape = smoothstep(.5, .12, r);
+        float a = smoothstep(.36, .78, c) * shape;
+        // luz cálida desde la meta y desde el camino
+        float toward = pow(max(dot(normalize(uGoal - vW), normalize(uCam - vW))*-1.,0.),2.);
+        float d = distance(vW, uCam);
+        vec3 cool = vec3(.16,.18,.23), warm = uLight*.55;
+        vec3 col = mix(cool, warm, clamp(toward*.6 + (1.-c)*.15, 0., 1.)) * (.55 + c*.6);
+        a *= smoothstep(10., 40., d) * (1. - smoothstep(300., 560., d)) * .85;
+        gl_FragColor = vec4(col, a);
+      }`
+  });
+  const CN = lowPower ? 26 : 40;
+  const cloudGeo = new THREE.PlaneGeometry(1, 1);
+  const clouds = [];
+  for (let i = 0; i < CN; i++) {
+    const t = Math.min(1, (i + Math.random()) / CN * 1.08); curve.getPointAt(Math.min(1, t), P);
+    const side = (i % 2 ? 1 : -1) * (4 + Math.random() * 18);
+    const g = cloudGeo.clone();
+    const seed = new Float32Array(4).fill(Math.random()); g.setAttribute('aSeed', new THREE.BufferAttribute(seed, 1));
+    const m = new THREE.Mesh(g, cloudMat);
+    const sc = 18 + Math.random() * 30;
+    m.scale.set(sc * 1.8, sc, 1);
+    m.position.set(P.x + side, P.y + 1 + Math.random() * 7, P.z - Math.random() * 6);
+    m.userData.below = Math.random() < .35;     // algunas nubes yacen bajo el camino
+    if (m.userData.below) { m.position.set(P.x + side * .6, P.y - 2.5, P.z); m.rotation.x = -Math.PI / 2.3; m.scale.set(sc * 2.2, sc * 1.4, 1); }
+    m.renderOrder = 2; scene.add(m); clouds.push(m);
+  }
 
   /* ---------- Cielo y estrellas ---------- */
   const sky = new THREE.Mesh(new THREE.SphereGeometry(700, 32, 16), new THREE.ShaderMaterial({
@@ -232,6 +264,14 @@ function init() {
       }`
   });
   const light = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), lightMat);
+  // la cumbre: una colina con una cruz recortada contra la Luz
+  const dark = new THREE.MeshBasicMaterial({ color: 0x07090D, fog: false });
+  const summit = new THREE.Group();
+  const hill = new THREE.Mesh(new THREE.SphereGeometry(30, 24, 12, 0, Math.PI * 2, 0, Math.PI / 2), dark);
+  hill.scale.set(1.9, .36, 1.2); summit.add(hill);
+  const v = new THREE.Mesh(new THREE.BoxGeometry(.9, 9, .9), dark); v.position.y = 10.6 + 4.5; summit.add(v);
+  const hb = new THREE.Mesh(new THREE.BoxGeometry(5.4, .9, .9), dark); hb.position.y = 10.6 + 6.4; summit.add(hb);
+  summit.position.set(GOAL.x, py(-L) - 1, -L - 40); scene.add(summit);
   light.position.copy(GOAL); light.renderOrder = 2; scene.add(light);
 
   /* ---------- Bucle ---------- */
@@ -255,7 +295,7 @@ function init() {
     U.uTime.value += reduce ? dt * .2 : dt;
 
     // caminar por el sendero según el scroll
-    const target = Math.min(.965, S.progress * .965);
+    const target = Math.min(.93, S.progress * .93);
     smooth += (target - smooth) * (reduce ? 1 : Math.min(1, dt * 1.8));
     curve.getPointAt(smooth, camP);
     curve.getPointAt(Math.min(1, smooth + .035), look);

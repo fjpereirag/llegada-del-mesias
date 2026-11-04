@@ -101,7 +101,7 @@ main,.foot{position:relative;z-index:2}
 .medal.reveal.is-in img,.pascua__item.reveal.is-in img{transform:scale(1)}
 
 /* ===== Columna única (móvil primero) ===== */
-.hero,.chapter,.lamina,.foot{width:100%;max-width:calc(var(--col) + 2 * var(--gutter));margin:0 auto;padding-left:var(--gutter);padding-right:var(--gutter)}
+.hero,.chapter,.foot{width:100%;max-width:calc(var(--col) + 2 * var(--gutter));margin:0 auto;padding-left:var(--gutter);padding-right:var(--gutter)}
 
 /* Hero: el texto arriba, el camino abajo a la vista */
 .hero{min-height:100svh;display:flex;flex-direction:column;justify-content:flex-start;padding-top:calc(var(--hud-h) + 12svh);position:relative}
@@ -203,11 +203,7 @@ main,.foot{position:relative;z-index:2}
 .pause{display:flex;align-items:center;gap:var(--space-2);justify-content:center;margin-top:var(--space-5);font-size:.7rem;letter-spacing:.28em;text-transform:uppercase;color:var(--muted)}
 .pause span{flex:1 1 40px;height:1px;background:var(--line)}
 
-/* ===== Lámina y pie ===== */
-.lamina{padding-bottom:var(--section-y)}
-.lamina__title{font-size:.78rem;letter-spacing:.3em;text-transform:uppercase;color:var(--accent);font-weight:400;margin:0 0 var(--space-2)}
-.lamina__img{display:block;border:1px solid var(--line)}
-.lamina__hint{font-size:var(--step-small);color:var(--muted);margin:.6rem 0 0}
+/* ===== Pie ===== */
 .foot{border-top:1px solid var(--line);padding-top:var(--space-5);padding-bottom:calc(var(--space-4) + env(safe-area-inset-bottom));font-size:.88rem;color:var(--muted);background:linear-gradient(rgba(11,14,20,.6),var(--bg))}
 .foot__big{font-family:var(--font-display);font-size:clamp(2.8rem,13vw,5rem);line-height:.92;letter-spacing:-.02em;margin:0 0 var(--space-4);color:var(--fg)}
 .foot p{margin:0 0 var(--space-2)}

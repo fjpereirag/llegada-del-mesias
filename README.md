@@ -1,8 +1,8 @@
 # La Llegada del Mesías · Etapa 9 (0 – 33 d.C.)
 
 Web 3D **para móvil** (columna única, pensada para el pulgar) que convierte la lámina «Etapa 9» en **un camino hacia Dios**:
-al deslizar caminas por un sendero de piedra que sube entre colinas nocturnas hacia una gran Luz. Las lámparas se encienden a tu paso
-y la Luz crece y cambia de tono en cada capítulo (oro, ámbar, rojo en la Pascua, blanco al final).
+al deslizar sigues un hilo de luz dorada que serpentea entre colinas y bruma hacia una cumbre con una cruz recortada contra una gran Luz
+(como el camino de luz de georgedo.com). La Luz crece y cambia de tono en cada capítulo (oro, ámbar, rojo en la Pascua, blanco al final).
 
 Inspirada en la experiencia narrativa de [georgedo.com](https://georgedo.com/) (Awwwards): umbral con elección de sonido,
 capítulos numerados, porcentaje de avance y un recorrido guiado por la luz.
@@ -36,7 +36,8 @@ index.html        recorrido completo
 404.html          página de error con el mismo sistema
 css/style.css     tokens (variante pastoral) y estilos
 js/main.js        umbral, sonido sintetizado, progreso, revelados, mazo de páginas
-js/scene.js       escena Three.js (sendero, colinas, lámparas, cielo, la Luz)
+js/scene.js       escena Three.js (hilo de luz, colinas, bruma, chispas, cielo, cumbre con cruz y la Luz)
+audio/            pon aquí musica.mp3 (opcional) · LEEME.md
 img/              medallones y miniaturas recortados de la infografía (WebP), og.jpg
 ```
 
@@ -44,7 +45,7 @@ img/              medallones y miniaturas recortados de la infografía (WebP), o
 
 - Three.js 0.160 incluido en `js/vendor/` (import map, sin CDN). Sin WebGL → respaldo estático con resplandor dorado.
 - DPR ≤ 1,5 y baja a 0,75 si mide menos de 35 fps (pensado para PCs sin tarjeta gráfica). Se pausa con la pestaña oculta.
-- Sonido: acorde suave generado con Web Audio (no hay archivos de audio); papel al pasar página.
+- Música: si pones `audio/musica.mp3` suena en bucle; si no, se genera un **oboe sintetizado con melodía original** sobre un acorde suave (ver `audio/LEEME.md`, incluye aviso de derechos). Campanilla al cumplirse cada promesa.
 - Botón «Reducir movimiento» + respeto a `prefers-reduced-motion`.
 - Las tarjetas son botones (`aria-pressed`): funcionan con toque, teclado y lector de pantalla. Vibración breve al cumplirse una promesa (Android).
 - `Esc` entra en silencio o cierra el índice.
